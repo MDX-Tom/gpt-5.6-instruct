@@ -214,7 +214,8 @@ See [docs/gpt-5.6-sol-safety-eval.md](docs/gpt-5.6-sol-safety-eval.md) for the c
 gpt-5.6-instruct/
 ├── README.md / README_EN.md           # Chinese and English home pages
 ├── codex-instruct.py                  # Default v41 deployment and rollback
-├── sync-archives.py                   # Synchronize local sources and ZIPs
+├── sync-archives.py                   # Sync local sources and ZIPs / structure check
+├── pyproject.toml                     # Unified pinned dependencies (dev / pages)
 ├── gpt-5.6-sol-unrestricted-v41.zip   # Sole default production release
 ├── gpt-5.6-sol-unrestricted-v41-skills.zip # Optional companion (--file)
 ├── historical-versions/               # v5/v24/v35 reproduction archives
@@ -226,7 +227,17 @@ gpt-5.6-instruct/
 │   ├── test_codex_instruct.py         # Deployment and rollback unit tests
 │   └── test_star_history_renderer.py  # Star History rate-limit fallback test
 ├── .github/workflows/test-codex-instruct.yml # Python 3.8/3.13 CI
+├── .github/workflows/verify-archives.yml     # ZIP structure check CI
 └── docs/architecture/                 # Editable Draw.io architecture source
+```
+
+### Dependencies
+
+Third-party dependencies are pinned in one place, [`pyproject.toml`](pyproject.toml), instead of being scattered across workflows:
+
+```bash
+pip install ".[dev]"     # run the unit tests (tomli is installed only on Python < 3.11)
+pip install ".[pages]"   # build the GitHub Pages home page (Markdown==3.8.2)
 ```
 
 ### Maintaining Release Archives
@@ -234,8 +245,14 @@ gpt-5.6-instruct/
 Default `v41`, the optional skills companion, historical `v5/v24/v35`, and test scripts are maintained together by `sync-archives.py`. Local v24/v35 source evidence remains under `reports/prompt_candidates/`, while the public history directory exposes only their ZIP archives. After editing a source, synchronize and verify the archives:
 
 ```bash
-python3 sync-archives.py
-python3 sync-archives.py --check
+python3 sync-archives.py            # regenerate ZIPs from local sources
+python3 sync-archives.py --check    # needs local sources: byte-compare ZIP vs source
+```
+
+The local sources are sensitive text and git-ignored, so CI cannot run `--check`. CI instead runs a source-free structural check confirming every ZIP is a valid single-file archive with the expected inner name:
+
+```bash
+python3 sync-archives.py --verify-archives
 ```
 
 <a id="upstream-agent-skills"></a>

@@ -6,6 +6,10 @@ tests/
 releases/
 tmp/
 
+# Build artifacts from `pip install .` (pyproject dependency groups).
+*.egg-info/
+build/
+
 .DS_Store
 **/.DS_Store
 

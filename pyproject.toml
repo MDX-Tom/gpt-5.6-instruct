@@ -1,0 +1,39 @@
+# Single source of truth for this project's pinned Python dependencies.
+# The runtime scripts (codex-instruct.py, sync-archives.py, the Pages/Star
+# History renderers) rely almost entirely on the standard library; the few
+# third-party pins live here so CI, the deploy workflow, and local runs stay
+# aligned instead of scattering unpinned `pip install` calls across workflows.
+#
+# Install the group you need, for example:
+#   pip install ".[dev]"     # run the unit tests
+#   pip install ".[pages]"   # build the bilingual README Pages site
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gpt-5.6-instruct"
+version = "41.0.0"
+description = "gpt-5.6 破甲提示词及测试包 / jailbreak prompt and test pack"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { file = "LICENSE" }
+
+[project.optional-dependencies]
+# Test/development tooling. tomllib is standard-library from Python 3.11 on,
+# so tomli is only needed on the 3.8-3.10 side of the CI matrix.
+dev = [
+    "tomli==2.2.1 ; python_version < '3.11'",
+]
+# Dependencies for building the GitHub Pages README site.
+pages = [
+    "Markdown==3.8.2",
+]
+
+# The repository is a collection of standalone scripts rather than an importable
+# package, so disable automatic module discovery (hyphenated filenames such as
+# codex-instruct.py are not valid module names). Installing only resolves the
+# dependency groups above.
+[tool.setuptools]
+py-modules = []

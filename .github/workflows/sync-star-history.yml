@@ -81,7 +81,7 @@ jobs:
           (cd "${STAR_HISTORY_SOURCE_DIR}/backend" && pnpm install --frozen-lockfile)
 
       - name: Install README renderer
-        run: python3 -m pip install --disable-pip-version-check --no-cache-dir Markdown==3.8.2
+        run: python3 -m pip install --disable-pip-version-check --no-cache-dir ".[pages]"
 
       - name: Render charts and build README pages
         id: render

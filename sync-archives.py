@@ -68,6 +68,58 @@ def archive_specs() -> list[tuple[Path, Path, str]]:
     return prompt_specs + script_specs
 
 
+def expected_archive_contents() -> list[tuple[Path, str]]:
+    """Map every committed archive to the single file it must contain.
+
+    Unlike ``archive_specs``, this needs no local sources, so it can run in a
+    clean CI checkout where the sensitive ``.md``/``scripts/*.py`` sources are
+    git-ignored and absent. Prompt archives use the explicit PROMPT_ARCHIVES
+    mapping; each ``scripts/<name>.zip`` must contain ``<name>.py``.
+    """
+    contents = [
+        (PROJECT_ROOT / destination, archive_name)
+        for _source, destination, archive_name in PROMPT_ARCHIVES
+    ]
+    contents.extend(
+        (archive, f"{archive.stem}.py")
+        for archive in sorted((PROJECT_ROOT / "scripts").glob("*.zip"))
+    )
+    return contents
+
+
+def verify_archive_structure() -> int:
+    """Check that every committed archive is a valid single-file ZIP.
+
+    This guards against corruption, a wrong inner filename, or an accidental
+    multi-file archive. It cannot detect content drift from the local source
+    (that requires the git-ignored sources and is what ``--check`` is for).
+    """
+    failed = False
+    for destination, archive_name in expected_archive_contents():
+        relative = destination.relative_to(PROJECT_ROOT)
+        try:
+            with zipfile.ZipFile(destination) as archive:
+                names = [name for name in archive.namelist() if not name.endswith("/")]
+                ok = names == [archive_name]
+        except FileNotFoundError:
+            print(f"[缺失] {relative}", file=sys.stderr)
+            failed = True
+            continue
+        except zipfile.BadZipFile:
+            print(f"[损坏] {relative}", file=sys.stderr)
+            failed = True
+            continue
+        if ok:
+            print(f"[OK] {relative}")
+        else:
+            print(
+                f"[结构错误] {relative} 应恰好包含 {archive_name}，实际为 {names}",
+                file=sys.stderr,
+            )
+            failed = True
+    return 1 if failed else 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Update release, history, example, and test-script ZIP archives."
@@ -77,7 +129,18 @@ def main() -> int:
         action="store_true",
         help="Verify that every archive exists and exactly matches its local source.",
     )
+    parser.add_argument(
+        "--verify-archives",
+        action="store_true",
+        help=(
+            "Source-free structural check: confirm every committed archive is a "
+            "valid single-file ZIP with the expected inner name. Safe for CI."
+        ),
+    )
     args = parser.parse_args()
+
+    if args.verify_archives:
+        return verify_archive_structure()
 
     specs = archive_specs()
     missing = [source for source, _destination, _name in specs if not source.is_file()]

@@ -214,7 +214,8 @@ python3 scripts/run_gpt56_sol_issue_regression.py --dry-run
 gpt-5.6-instruct/
 ├── README.md / README_EN.md           # 中英文首页
 ├── codex-instruct.py                  # v41 默认部署与回滚
-├── sync-archives.py                   # 本地源文件与 ZIP 同步
+├── sync-archives.py                   # 本地源文件与 ZIP 同步 / 结构校验
+├── pyproject.toml                     # 统一的固定版本依赖（dev / pages）
 ├── gpt-5.6-sol-unrestricted-v41.zip   # 唯一默认生产版
 ├── gpt-5.6-sol-unrestricted-v41-skills.zip # 可选 skills 配套包（--file）
 ├── historical-versions/               # v5/v24/v35 复现归档
@@ -226,7 +227,17 @@ gpt-5.6-instruct/
 │   ├── test_codex_instruct.py         # 部署与回滚单元测试
 │   └── test_star_history_renderer.py  # Star History 限流回退测试
 ├── .github/workflows/test-codex-instruct.yml # Python 3.8/3.13 CI
+├── .github/workflows/verify-archives.yml     # ZIP 结构校验 CI
 └── docs/architecture/                 # 可编辑的 Draw.io 架构图源文件
+```
+
+### 依赖
+
+第三方依赖统一固定在 [`pyproject.toml`](pyproject.toml) 中，避免散落在各 workflow 里：
+
+```bash
+pip install ".[dev]"     # 运行单元测试（tomli 仅在 Python < 3.11 安装）
+pip install ".[pages]"   # 构建 GitHub Pages 首页（Markdown==3.8.2）
 ```
 
 ### 维护发布包
@@ -234,8 +245,14 @@ gpt-5.6-instruct/
 默认 `v41`、可选 skills 配套包、历史 `v5/v24/v35` 与测试脚本均由 `sync-archives.py` 统一维护。历史 v24/v35 的本地源证据继续保留在 `reports/prompt_candidates/`，公开目录只提供其 ZIP。修改源文件后，请同步并检查压缩包：
 
 ```bash
-python3 sync-archives.py
-python3 sync-archives.py --check
+python3 sync-archives.py            # 从本地源重新生成 ZIP
+python3 sync-archives.py --check    # 需本地源：逐字节比对 ZIP 与源
+```
+
+本地源为敏感文本、默认 git-ignore，因此 CI 无法运行 `--check`。CI 改跑无需源文件的结构校验，确认每个 ZIP 都是内含单一且命名正确文件的有效压缩包：
+
+```bash
+python3 sync-archives.py --verify-archives
 ```
 
 <a id="upstream-agent-skills"></a>

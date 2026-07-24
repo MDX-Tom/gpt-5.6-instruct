@@ -1,0 +1,42 @@
+# Guard the committed release/history/example/test-script ZIP archives.
+#
+# The plaintext prompt/.py sources are intentionally git-ignored (they contain
+# sensitive text), so content drift can only be checked locally with
+# `python3 sync-archives.py --check` where the sources exist. In CI we instead
+# run the source-free structural check, which confirms every committed archive
+# is a valid single-file ZIP with the expected inner name.
+name: Verify archives
+
+on:
+  pull_request:
+    paths:
+      - "**/*.zip"
+      - "sync-archives.py"
+      - ".github/workflows/verify-archives.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "**/*.zip"
+      - "sync-archives.py"
+      - ".github/workflows/verify-archives.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      # Source-free: validates archive structure without the git-ignored sources.
+      - name: Verify committed archives
+        run: python3 sync-archives.py --verify-archives

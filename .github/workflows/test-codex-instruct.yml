@@ -9,6 +9,7 @@ on:
       - "codex-instruct.py"
       - ".github/scripts/render_star_history.py"
       - "unit-tests/**"
+      - "pyproject.toml"
       - ".github/workflows/test-codex-instruct.yml"
   push:
     branches:
@@ -17,6 +18,7 @@ on:
       - "codex-instruct.py"
       - ".github/scripts/render_star_history.py"
       - "unit-tests/**"
+      - "pyproject.toml"
       - ".github/workflows/test-codex-instruct.yml"
   workflow_dispatch:
 
@@ -43,8 +45,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       # Python 3.8-3.10 use tomli; newer Python versions use the standard-library tomllib.
-      - name: Install test compatibility dependency
-        run: python -m pip install tomli
+      - name: Install pinned test dependencies
+        run: python -m pip install ".[dev]"
 
       # Catch syntax/import compatibility problems before running behavioral tests.
       - name: Compile deployment script and tests
