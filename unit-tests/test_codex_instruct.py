@@ -31,6 +31,15 @@ class ManagedConfigTests(unittest.TestCase):
         config_path.write_text(text, encoding="utf-8")
         return temporary_directory, config_path
 
+    def test_atomic_write_preserves_lf_bytes_on_windows(self) -> None:
+        temporary_directory = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary_directory.cleanup)
+        path = Path(temporary_directory.name) / "prompt.md"
+
+        codex_instruct.atomic_write_text(path, "first\nsecond\n")
+
+        self.assertEqual(path.read_bytes(), b"first\nsecond\n")
+
     def test_v42_is_the_only_default_release(self) -> None:
         self.assertEqual(
             codex_instruct.DEFAULT_PROMPT_MD_FILENAME,
@@ -231,7 +240,12 @@ class ManagedConfigTests(unittest.TestCase):
         target = codex_home / "shared-config.toml"
         config_path = codex_home / "config.toml"
         target.write_text('model = "gpt-5.5"\n', encoding="utf-8")
-        config_path.symlink_to(target.name)
+        try:
+            config_path.symlink_to(target.name)
+        except OSError as exc:
+            if getattr(exc, "winerror", None) == 1314:
+                self.skipTest("Windows symlink privilege is unavailable")
+            raise
 
         codex_instruct.set_model_instructions(
             config_path,

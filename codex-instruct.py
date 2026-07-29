@@ -256,7 +256,9 @@ def atomic_write_text(path: Path, text: str, *, follow_symlink: bool = False) ->
     )
     temporary_path = Path(temporary_name)
     try:
-        with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+        # Disable platform newline translation so the deployed file hash matches
+        # the SHA256 stored in the managed-install state on Windows as well.
+        with os.fdopen(descriptor, "w", encoding="utf-8", newline="") as handle:
             handle.write(text)
             handle.flush()
             os.fsync(handle.fileno())
