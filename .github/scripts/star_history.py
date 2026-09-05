@@ -44,6 +44,10 @@ FALLBACK_RENDER_ATTEMPTS = 4
 
 MAIN_PATH = Path("backend/main.ts")
 
+
+class RepositoryMismatchError(ValueError):
+    """The deployed cache belongs to a repository identity we must not merge."""
+
 STARTUP_ORIGINAL = """const startServer = async () => {
   await initTokenFromEnv();
   initOgAssets();
@@ -172,7 +176,9 @@ def validate_data(payload: Any, repository: str) -> Dict[str, Any]:
     if payload.get("schema_version") != SCHEMA_VERSION:
         raise ValueError("unsupported Star History data schema")
     if str(payload.get("repository", "")).lower() != repository.lower():
-        raise ValueError("Star History data targets a different repository")
+        raise RepositoryMismatchError(
+            "Star History data targets a different repository"
+        )
     logo_url = payload.get("logo_url")
     if not isinstance(logo_url, str) or not logo_url.startswith("data:image/"):
         raise ValueError("Star History data is missing an embedded logo")
@@ -223,6 +229,15 @@ def load_best_data(
         try:
             deployed = validate_data(download_json(deployed_url), repository)
             return deployed, "deployed Pages data"
+        except RepositoryMismatchError:
+            # A repository rename leaves the old Pages deployment reachable at
+            # the new URL until this workflow publishes once. Never merge that
+            # differently identified cache; bootstrap the renamed repository
+            # from its committed, independently validated seed instead.
+            print(
+                "[data] deployed cache belongs to a previous repository "
+                "identity; using repository seed"
+            )
         except urllib.error.HTTPError as exc:
             try:
                 status = exc.code

@@ -43,10 +43,13 @@ def make_svg(theme: str) -> bytes:
     ).encode("utf-8")
 
 
-def make_data(last_count: int = 100):
+def make_data(
+    last_count: int = 100,
+    repository: str = "mdx-tom/gpt-instruct",
+):
     return {
         "schema_version": 1,
-        "repository": "mdx-tom/gpt-instruct",
+        "repository": repository,
         "updated_at": "2026-07-02T00:00:00Z",
         "logo_url": "data:image/png;base64,AA==",
         "star_records": [
@@ -227,8 +230,9 @@ class StarHistoryDataTests(unittest.TestCase):
         })
 
     # The deployed Pages cache carries history between commit-free runs. Only a
-    # first-run 404 may use the seed; transient errors must preserve live data.
-    def test_deployed_data_preferred_with_first_run_seed_only(self) -> None:
+    # first-run 404 or explicit repository rename may use the seed; transient
+    # errors and malformed current-repository data must preserve live data.
+    def test_deployed_data_preferred_with_guarded_seed_fallbacks(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             seed_file = Path(temporary_directory) / "seed.json"
             seed_file.write_text(json.dumps(make_data(100)), encoding="utf-8")
@@ -263,6 +267,39 @@ class StarHistoryDataTests(unittest.TestCase):
                 )
             self.assertEqual(payload["star_records"][-1]["count"], 100)
             self.assertEqual(source, "repository seed")
+
+            renamed_repository_cache = make_data(
+                99,
+                repository="mdx-tom/gpt-5.6-instruct",
+            )
+            output = io.StringIO()
+            with patch.object(
+                star_history,
+                "download_json",
+                return_value=renamed_repository_cache,
+            ), redirect_stdout(output):
+                payload, source = star_history.load_best_data(
+                    repository="mdx-tom/gpt-instruct",
+                    seed_file=seed_file,
+                    deployed_url="https://mdx-tom.github.io/example/data.json",
+                )
+            self.assertEqual(payload["repository"], "mdx-tom/gpt-instruct")
+            self.assertEqual(payload["star_records"][-1]["count"], 100)
+            self.assertEqual(source, "repository seed")
+            self.assertIn("previous repository identity", output.getvalue())
+
+            malformed_current_cache = make_data(102)
+            malformed_current_cache["logo_url"] = "https://example.com/logo.png"
+            with patch.object(
+                star_history,
+                "download_json",
+                return_value=malformed_current_cache,
+            ), self.assertRaisesRegex(RuntimeError, "preserving the last deployment"):
+                star_history.load_best_data(
+                    repository="mdx-tom/gpt-instruct",
+                    seed_file=seed_file,
+                    deployed_url="https://mdx-tom.github.io/example/data.json",
+                )
 
             with patch.object(
                 star_history,
