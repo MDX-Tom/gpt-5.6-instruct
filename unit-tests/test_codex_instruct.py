@@ -5,6 +5,7 @@ import json
 import sys
 import tempfile
 import unittest
+import zipfile
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -86,10 +87,13 @@ class ManagedConfigTests(unittest.TestCase):
 
         self.assertEqual(result, 0)
         deployed = codex_home / "gpt-6-astra-v1-rc1.md"
-        self.assertEqual(
-            deployed.read_bytes(),
-            (PROJECT_ROOT / "gpt-6-astra-v1-rc1.md").read_bytes(),
-        )
+        archive_path, archive_md_filename = codex_instruct.PROMPT_VERSIONS[
+            "gpt-6-v1-rc1"
+        ]
+        with zipfile.ZipFile(archive_path) as archive:
+            self.assertEqual(archive.namelist(), [archive_md_filename])
+            expected_prompt = archive.read(archive_md_filename)
+        self.assertEqual(deployed.read_bytes(), expected_prompt)
         self.assertIn(
             'model_instructions_file = "./gpt-6-astra-v1-rc1.md"',
             config_path.read_text(encoding="utf-8"),
