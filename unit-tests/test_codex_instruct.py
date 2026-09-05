@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -31,19 +32,31 @@ class ManagedConfigTests(unittest.TestCase):
         config_path.write_text(text, encoding="utf-8")
         return temporary_directory, config_path
 
-    def test_v45_is_the_only_default_release(self) -> None:
+    def test_gpt56_v45_is_the_stable_default_release(self) -> None:
+        self.assertEqual(codex_instruct.DEFAULT_PROMPT_VERSION, "gpt-5.6-v45")
         self.assertEqual(
             codex_instruct.DEFAULT_PROMPT_MD_FILENAME,
-            "gpt-5.6-sol-unrestricted-v45.md",
+            "gpt-5.6-sol-v45.md",
         )
         self.assertEqual(
             codex_instruct.DEFAULT_PROMPT_ARCHIVE.name,
-            "gpt-5.6-sol-unrestricted-v45.zip",
+            "gpt-5.6-sol-v45.zip",
         )
-        self.assertFalse(hasattr(codex_instruct, "PROMPT_VERSIONS"))
+        self.assertEqual(
+            {
+                version: (archive.name, md_filename)
+                for version, (archive, md_filename) in codex_instruct.PROMPT_VERSIONS.items()
+            },
+            {
+                "gpt-5.6-v45": ("gpt-5.6-sol-v45.zip", "gpt-5.6-sol-v45.md"),
+                "gpt-6-v1-rc1": ("gpt-6-astra-v1-rc1.zip", "gpt-6-astra-v1-rc1.md"),
+            },
+        )
+        self.assertIn("gpt-6-astra-v1-rc1.md", codex_instruct.MANAGED_PROMPT_FILENAMES)
         self.assertEqual(
             codex_instruct.LEGACY_MANAGED_PROMPT_FILENAMES,
             {
+                "gpt-5.6-sol-unrestricted-v45.md",
                 "gpt-5.6-sol-unrestricted-v5.md",
                 "gpt-5.6-sol-unrestricted-v35.md",
                 "gpt-5.6-sol-unrestricted-v41.md",
@@ -51,6 +64,48 @@ class ManagedConfigTests(unittest.TestCase):
                 "gpt-5.6-sol-unrestricted-v42.md",
             },
         )
+
+    def test_cli_deploys_selected_rc1_archive(self) -> None:
+        temporary_directory, config_path = self.make_config('model = "gpt-6-astra"\n')
+        self.addCleanup(temporary_directory.cleanup)
+        codex_home = config_path.parent
+
+        with patch.object(
+            sys,
+            "argv",
+            [
+                "codex-instruct.py",
+                "--apply",
+                "--version",
+                "gpt-6-v1-rc1",
+                "--codex-dir",
+                str(codex_home),
+            ],
+        ):
+            result = codex_instruct.main()
+
+        self.assertEqual(result, 0)
+        deployed = codex_home / "gpt-6-astra-v1-rc1.md"
+        self.assertEqual(
+            deployed.read_bytes(),
+            (PROJECT_ROOT / "gpt-6-astra-v1-rc1.md").read_bytes(),
+        )
+        self.assertIn(
+            'model_instructions_file = "./gpt-6-astra-v1-rc1.md"',
+            config_path.read_text(encoding="utf-8"),
+        )
+
+    def test_interactive_menu_selects_each_packaged_version(self) -> None:
+        with patch("builtins.input", return_value="1"):
+            self.assertEqual(
+                codex_instruct.interactive_action(),
+                "apply:gpt-5.6-v45",
+            )
+        with patch("builtins.input", return_value="2"):
+            self.assertEqual(
+                codex_instruct.interactive_action(),
+                "apply:gpt-6-v1-rc1",
+            )
 
     # A pre-existing top-level instruction line, including its comment, survives deploy/reset.
     def test_round_trip_restores_previous_instruction_entry(self) -> None:

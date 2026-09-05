@@ -32,12 +32,12 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  STAR_HISTORY_REPOSITORY: mdx-tom/gpt-5.6-instruct
+  STAR_HISTORY_REPOSITORY: mdx-tom/gpt-instruct
   # Pin the official renderer revision so the guarded local patch is reproducible.
   STAR_HISTORY_SOURCE_REF: bcddc9d532b10bac7e0187a741288bf9cab17616
   STAR_HISTORY_SOURCE_DIR: .star-history-upstream
   STAR_HISTORY_SITE_DIR: .star-history-site
-  STAR_HISTORY_PAGES_URL: https://mdx-tom.github.io/gpt-5.6-instruct
+  STAR_HISTORY_PAGES_URL: https://mdx-tom.github.io/gpt-instruct
 
 jobs:
   render-and-deploy:
@@ -162,7 +162,7 @@ jobs:
           fi
 
           python3 .github/scripts/build_pages_readme.py \
-            --repository "MDX-Tom/gpt-5.6-instruct" \
+            --repository "MDX-Tom/gpt-instruct" \
             --pages-url "${STAR_HISTORY_PAGES_URL}" \
             --output-dir "${STAR_HISTORY_SITE_DIR}"
 

@@ -18,9 +18,9 @@ except ImportError as exc:  # pragma: no cover - exercised by the workflow setup
     raise SystemExit("Python package 'Markdown' is required") from exc
 
 
-DEFAULT_REPOSITORY = "MDX-Tom/gpt-5.6-instruct"
+DEFAULT_REPOSITORY = "MDX-Tom/gpt-instruct"
 DEFAULT_BRANCH = "main"
-DEFAULT_PAGES_URL = "https://mdx-tom.github.io/gpt-5.6-instruct"
+DEFAULT_PAGES_URL = "https://mdx-tom.github.io/gpt-instruct"
 
 PAGE_STYLES = r"""
 :root {

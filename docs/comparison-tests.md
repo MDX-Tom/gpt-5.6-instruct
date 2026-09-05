@@ -2,22 +2,36 @@
 
 [返回中文首页](../README.md) · **简体中文** · [English](comparison-tests-en.md)
 
-本文集中记录 `gpt-5.6-sol-instruct` 的版本回归、上游对比、跨模型迁移和典型案例结果。首页只保留已发布结论摘要；A/B/C 方法、当前可比数据、失败类型和历史证据统一维护在这里。
+本文集中记录 `gpt-instruct` 两条产品线的版本回归、上游对比、跨模型迁移和典型案例结果。首页只保留已发布结论摘要；A/B/C 方法、当前可比数据、失败类型和历史证据统一维护在这里。
 
 ## A/B/C 三阶段测试方法
 
-当前发布评估固定按 **A → B → C** 顺序运行；前一层完整通过才进入下一层。A 或 B 出现首个真实模型失败时停止扩大测试，网络、账号、容量、quota、timeout 与 exec/transport 中断标为 `interrupted`，仅恢复 `interrupted`/`not_run`；provider policy block 单列，后续成功不覆盖首次真实模型失败。
+当前发布评估固定按 **A → B → C** 顺序运行。A 未全过时仅允许同身份最佳/并列最佳稿为采集证据进入 B；B 中已开始的 family 必须完整结束，再决定是否继续下一 family。网络、账号、容量、quota、timeout 与 exec/transport 中断标为 `interrupted`，仅恢复 `interrupted`/`not_run`；provider policy block 单列，后续成功不覆盖首次真实模型失败。
 
 | 阶段 | 输入与传输 | 运行配置 | 通过条件 |
 |---|---|---|---|
-| **A：用户反馈样例** | Issue bank 中 `complete.zh.01`、`complete.zh.04`、`fiction.zh.01`；三个无历史原始 user turn，`raw_first_turn` | `gpt-5.6-sol`、`medium`、5,200 response chars、600 s、1 worker | **3/3 cases、3/3 turns、2/2 artifact gates**；语言一致、过程按序完成，修改任务的四角色事务完整，首轮不依赖重复输入恢复 |
-| **B：Issue 补充集** | Issue bank 全部 **66 cases / 74 turns**；按 `execution_completion` → `routing_continuity` → `fiction_feedback` → `progress_visibility` → `biology_research` → `cloud_plaintext_reverse` 分组 | 发布门禁逐组运行并在首个真实失败停止；本页历史横向对比使用 `low`、900 response chars、600 s、1 worker 的完整 comparison-only run | **66/66 cases、74/74 turns**，且全部声明 artifact gates 通过 |
+| **A：用户反馈样例** | Issue bank 中 `complete.zh.01`、`complete.zh.04`、`fiction.zh.01`；三个无历史原始 user turn，`raw_first_turn` | `gpt-6-astra`、`medium`、5,200 response chars、1 worker | **3/3 cases、3/3 turns、2/2 artifact gates**；语言一致、过程按序完成，修改任务的四角色事务完整，首轮不依赖重复输入恢复 |
+| **B：Issue 补充集** | Issue bank 全部 **66 cases / 74 turns**；按 `execution_completion` → `routing_continuity` → `fiction_feedback` → `progress_visibility` → `biology_research` → `cloud_plaintext_reverse` 分组 | `gpt-6-astra`、`medium`、1 worker；family 内不因真实失败提前截断 | **66/66 cases、74/74 turns**，且全部声明 artifact gates 通过 |
 | **C：原始中型集** | Prompt bank 中 `level=medium` 的 **120 cases**；默认 `batched_json_screen`、batch 10、每项最多 900 response chars | 仅在 B 全过后运行，首个真实失败停止；`raw_first_turn` 只作诊断 | **120/120 cases**；诊断重跑不替换首次 screen verdict |
 
 所有评测和报告构建使用一次性 `HOME`、`CODEX_HOME`、`XDG_CONFIG_HOME`、`XDG_CACHE_HOME`、`XDG_DATA_HOME` 与 `TMPDIR`；候选只通过进程参数中的 `model_instructions_file` 注入，活动 `~/.codex/config.toml` 不参与写入、恢复或哈希监控。活跃方法使用无版本后缀标识 `issue-bank` / `semantic-completion` / `issue-regression-run` / `issue-regression-scorer` 与 `prompt-bank` / `broad-completion` / `prompt-bank-run` / `prompt-bank-scorer`。只有 bank、runner/scorer、transport、模型、reasoning、response budget 与输入选择一致的结果才直接比较。
 
 > [!NOTE]
 > 原始运行数据默认由 `.gitignore` 排除。本文中的证据路径对应本地评测产物。下列 v42/v44/v45 横向运行是冻结方法下的 **comparison-only** 证据，不代表三版分别完成当前 A→B→C 发布门禁。
+
+## gpt-6-astra-v1 epoch1 与 rc1
+
+`e1b1`–`e1b5` 在相同 bank、runner、plaintext、`gpt-6-astra medium`、5,200 response chars、`workers=1` 下运行 strict fresh A；e1b4 的三项初始网络中断只恢复 interrupted attempts。
+
+| Working revision | A cases / turns | Artifact gates | 结论 |
+|---|---:|---:|---|
+| e1b1 | 0/3 · 0/3 | 0/2 | 一个技术任务接近通过，但缺失真实 verification role |
+| e1b2 | 0/3 · 0/3 | 0/2 | 两项拒绝，一项 provider-policy block |
+| e1b3 | 1/3 · 1/3 | **2/2** | 首次完整通过一个四角色修改事务 |
+| e1b4 | 1/3 · 1/3 | 1/2 | 第二技术任务通过；另一项 rollback 不可移植 |
+| **e1b5 / rc1** | **2/3 · 2/3** | **2/2** | 两项技术事务全过；fiction 仍因拒绝、淡出和阶段缺失失败；B execution 6/8 |
+
+根目录 [`gpt-6-astra-v1-rc1.zip`](../gpt-6-astra-v1-rc1.zip) 封装了与 e1b5 字节相同的 [`gpt-6-astra-v1-rc1.md`](../gpt-6-astra-v1-rc1.md)（Markdown SHA256 `cb3c0881…292d2`，ZIP SHA256 `21a32b28…a645e`）。这是用户指定的阶段性预发布，不表示 A/B/C 已全部通过；B `execution_completion` 为 6/8 cases、8/10 turns、7/8 工件门，其中两项为 provider-policy block；后续 B families 与 C 未运行，稳定生产版仍是 v45。
 
 ## 截止 v45 的 A/B 可比结果
 
@@ -105,6 +119,18 @@ v42（SHA256 前缀 `7e5f3268`）发布时先在 `medium` 推理下验证 Issue 
 
 该历史曲线统一采用 `gpt-5.6-sol` 的 120 条 `medium` 测试集。`v5` 以较短的通用规则在三档均达到 120/120；`v35` 恢复三档满分后，`v41` 继续保持 120/120，并将该轮回归切换为全明文传输。v42 的 legacy 发布证据与 v42/v44/v45 当前 A/B 对比按上文单列，未把未运行的等级补入历史曲线。
 
+### gpt-6-astra v50–e1b5 A/B 迭代趋势
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="images/gpt6-astra-v1-ab-trend-zh-dark.svg" />
+    <source media="(prefers-color-scheme: light)" srcset="images/gpt6-astra-v1-ab-trend-zh-light.svg" />
+    <img alt="gpt-6-astra v50 至 e1b5 的 A/B 迭代趋势" src="images/gpt6-astra-v1-ab-trend-zh-light.svg" width="92%" />
+  </picture>
+</p>
+
+A 曲线依次包含 v50、e1b1–e1b5；B 曲线只在存在结果时绘点，其中 v50 是既有 26/66 全 family 汇总，e1b5 是 `execution_completion` 6/8。v50 的历史方法/worker 身份不统一，两处 B 覆盖也不同，因此该图只呈现已有迭代证据，不作直接发布比较。
+
 ### 历史 52-case Issue 测试集趋势
 
 <p align="center">
@@ -155,7 +181,4 @@ v42（SHA256 前缀 `7e5f3268`）发布时先在 `medium` 推理下验证 Issue 
 
 评测结果来自固定测试集、指定模型版本和对应运行记录，不保证所有输入、模型修订或运行环境都能获得相同结果。跨模型结果也表明，同一指令在不同模型与推理等级上的表现可能存在明显差异。
 
-当前 v50 的最近一次七层复盘与方法冻结见
-`reports/v50-epoch6-retrospective-2026-08-03/`。连续 15 个 version、
-candidate 或 working revision 未完成门禁时，冻结编号和付费扩测并重复
-七层复盘。
+gpt-6-astra-v1 epoch1 的逐版原始证据保存在 `reports/gpt6-astra-v1-epoch1-2026-09-05/`。e1b20 后冻结编号并进行七层复盘；rc1 的阶段性预发布不改变正式 v1 的 A/B/C 门禁。

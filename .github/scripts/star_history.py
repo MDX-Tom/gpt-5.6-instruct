@@ -31,7 +31,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 
 DEFAULT_BACKEND_URL = "http://127.0.0.1:8080"
-DEFAULT_REPOSITORY = "mdx-tom/gpt-5.6-instruct"
+DEFAULT_REPOSITORY = "mdx-tom/gpt-instruct"
 SCHEMA_VERSION = 1
 THEMES = ("light", "dark")
 
@@ -207,7 +207,7 @@ def download_json(url: str) -> Dict[str, Any]:
         raise ValueError("deployed data URL must use HTTPS")
     request = urllib.request.Request(
         url,
-        headers={"User-Agent": "MDX-Tom/gpt-5.6-instruct Star History updater"},
+        headers={"User-Agent": "MDX-Tom/gpt-instruct Star History updater"},
     )
     with urllib.request.urlopen(request, timeout=30) as response:
         return json.loads(response.read().decode("utf-8"))
@@ -250,7 +250,7 @@ def fetch_repository_star_count(repository: str, token: str) -> int:
         headers={
             "Accept": "application/vnd.github+json",
             "Authorization": "Bearer {0}".format(token),
-            "User-Agent": "MDX-Tom/gpt-5.6-instruct Star History updater",
+            "User-Agent": "MDX-Tom/gpt-instruct Star History updater",
             "X-GitHub-Api-Version": "2022-11-28",
         },
     )
@@ -467,7 +467,7 @@ def download_svg(url: str, attempts: int = 4) -> bytes:
         url,
         headers={
             "Accept": "image/svg+xml",
-            "User-Agent": "MDX-Tom/gpt-5.6-instruct local Star-History renderer",
+            "User-Agent": "MDX-Tom/gpt-instruct local Star-History renderer",
         },
     )
     last_error: Optional[Exception] = None

@@ -38,7 +38,7 @@ def make_svg(theme: str) -> bytes:
     return (
         '<svg xmlns="http://www.w3.org/2000/svg" width="800" height="533.333">'
         f"<style>svg{{background:{background};font-family:xkcd}}</style>"
-        "<desc>Star History GitHub Stars mdx-tom/gpt-5.6-instruct xkcdify"
+        "<desc>Star History GitHub Stars mdx-tom/gpt-instruct xkcdify"
         f"{padding}</desc></svg>"
     ).encode("utf-8")
 
@@ -46,7 +46,7 @@ def make_svg(theme: str) -> bytes:
 def make_data(last_count: int = 100):
     return {
         "schema_version": 1,
-        "repository": "mdx-tom/gpt-5.6-instruct",
+        "repository": "mdx-tom/gpt-instruct",
         "updated_at": "2026-07-02T00:00:00Z",
         "logo_url": "data:image/png;base64,AA==",
         "star_records": [
@@ -156,7 +156,7 @@ class StarHistoryDataTests(unittest.TestCase):
         payload = star_history.read_json_file(seed_file)
         validated = star_history.validate_data(
             payload,
-            "mdx-tom/gpt-5.6-instruct",
+            "mdx-tom/gpt-instruct",
         )
         self.assertGreaterEqual(len(validated["star_records"]), 2)
         self.assertGreater(validated["star_records"][-1]["count"], 0)
@@ -180,14 +180,14 @@ class StarHistoryDataTests(unittest.TestCase):
             return_value=FakeResponse(),
         ) as urlopen:
             count = star_history.fetch_repository_star_count(
-                "mdx-tom/gpt-5.6-instruct",
+                "mdx-tom/gpt-instruct",
                 "test-token",
             )
 
         request = urlopen.call_args.args[0]
         self.assertEqual(
             request.full_url,
-            "https://api.github.com/repos/mdx-tom/gpt-5.6-instruct",
+            "https://api.github.com/repos/mdx-tom/gpt-instruct",
         )
         self.assertNotIn("/stargazers", request.full_url)
         self.assertEqual(count, 2841)
@@ -198,7 +198,7 @@ class StarHistoryDataTests(unittest.TestCase):
         original = make_data(last_count=100)
         unchanged = star_history.update_current_record(
             original,
-            repository="mdx-tom/gpt-5.6-instruct",
+            repository="mdx-tom/gpt-instruct",
             star_count=100,
             current_time=datetime(2026, 7, 2, 12, tzinfo=timezone.utc),
         )
@@ -206,7 +206,7 @@ class StarHistoryDataTests(unittest.TestCase):
 
         same_day = star_history.update_current_record(
             original,
-            repository="mdx-tom/gpt-5.6-instruct",
+            repository="mdx-tom/gpt-instruct",
             star_count=101,
             current_time=datetime(2026, 7, 2, 12, tzinfo=timezone.utc),
         )
@@ -216,7 +216,7 @@ class StarHistoryDataTests(unittest.TestCase):
 
         next_day = star_history.update_current_record(
             same_day,
-            repository="mdx-tom/gpt-5.6-instruct",
+            repository="mdx-tom/gpt-instruct",
             star_count=102,
             current_time=datetime(2026, 7, 3, 1, 2, 3, tzinfo=timezone.utc),
         )
@@ -240,7 +240,7 @@ class StarHistoryDataTests(unittest.TestCase):
                 return_value=deployed,
             ):
                 payload, source = star_history.load_best_data(
-                    repository="mdx-tom/gpt-5.6-instruct",
+                    repository="mdx-tom/gpt-instruct",
                     seed_file=seed_file,
                     deployed_url="https://mdx-tom.github.io/example/data.json",
                 )
@@ -257,7 +257,7 @@ class StarHistoryDataTests(unittest.TestCase):
                 )
             ):
                 payload, source = star_history.load_best_data(
-                    repository="mdx-tom/gpt-5.6-instruct",
+                    repository="mdx-tom/gpt-instruct",
                     seed_file=seed_file,
                     deployed_url="https://mdx-tom.github.io/example/data.json",
                 )
@@ -270,7 +270,7 @@ class StarHistoryDataTests(unittest.TestCase):
                 side_effect=urllib.error.URLError("offline"),
             ), self.assertRaisesRegex(RuntimeError, "preserving the last deployment"):
                 star_history.load_best_data(
-                    repository="mdx-tom/gpt-5.6-instruct",
+                    repository="mdx-tom/gpt-instruct",
                     seed_file=seed_file,
                     deployed_url="https://mdx-tom.github.io/example/data.json",
                 )

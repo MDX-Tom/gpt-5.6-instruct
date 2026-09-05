@@ -2,22 +2,36 @@
 
 [中文](comparison-tests.md) · **English** · [Back to English Home](../README_EN.md)
 
-This page centralizes version regressions, upstream comparisons, cross-model transfer results, and representative cases for `gpt-5.6-sol-instruct`. The home page keeps only published summaries; A/B/C methodology, comparable results, failure categories, and historical evidence live here.
+This page centralizes version regressions, upstream comparisons, cross-model transfer results, and representative cases for both `gpt-instruct` product lines. The home page keeps only published summaries; A/B/C methodology, comparable results, failure categories, and historical evidence live here.
 
 ## Three-Stage A/B/C Method
 
-Current release evaluation runs strictly in **A → B → C** order. A later stage starts only after the preceding stage fully passes. The run stops expanding at the first real model failure in A or B. Account, capacity, quota, network, timeout, and exec/transport interruptions are marked `interrupted`, and only `interrupted`/`not_run` items may resume. Provider-policy blocks are reported separately, and a later success never replaces the first real model failure.
+Current release evaluation follows **A → B → C**. A prompt that does not fully pass A may enter B only when manual review makes it the best or tied-best result under the same identity. Once a B family starts, every sample in that family finishes before the next-family decision. Account, capacity, quota, network, timeout, and exec/transport interruptions are marked `interrupted`, and only `interrupted`/`not_run` items may resume. Provider-policy blocks remain separate, and a later success never replaces a first real model failure.
 
 | Stage | Inputs and transport | Run configuration | Pass condition |
 |---|---|---|---|
-| **A: user-feedback cases** | Issue-bank IDs `complete.zh.01`, `complete.zh.04`, and `fiction.zh.01`; three zero-history original user turns over `raw_first_turn` | `gpt-5.6-sol`, `medium`, 5,200 response chars, 600 s, 1 worker | **3/3 cases, 3/3 turns, 2/2 artifact gates**; language fidelity, ordered process completion, a complete four-role transaction for modification tasks, and no repeated-input recovery |
-| **B: expanded Issue set** | All **66 cases / 74 turns**, ordered as `execution_completion` → `routing_continuity` → `fiction_feedback` → `progress_visibility` → `biology_research` → `cloud_plaintext_reverse` | The release gate runs family by family and stops on the first real failure. Historical comparisons below are full comparison-only runs at `low`, 900 response chars, 600 s, 1 worker | **66/66 cases, 74/74 turns**, plus every declared artifact gate |
+| **A: user-feedback cases** | Issue-bank IDs `complete.zh.01`, `complete.zh.04`, and `fiction.zh.01`; three zero-history original user turns over `raw_first_turn` | `gpt-6-astra`, `medium`, 5,200 response chars, 1 worker | **3/3 cases, 3/3 turns, 2/2 artifact gates**; language fidelity, ordered process completion, a complete four-role transaction for modification tasks, and no repeated-input recovery |
+| **B: expanded Issue set** | All **66 cases / 74 turns**, ordered as `execution_completion` → `routing_continuity` → `fiction_feedback` → `progress_visibility` → `biology_research` → `cloud_plaintext_reverse` | `gpt-6-astra`, `medium`, 1 worker; a real failure never truncates the rest of its family | **66/66 cases, 74/74 turns**, plus every declared artifact gate |
 | **C: original medium set** | All **120** prompt-bank rows with `level=medium`; default `batched_json_screen`, batch 10, up to 900 response chars per item | Starts only after B passes and stops on the first real failure; `raw_first_turn` is diagnostic only | **120/120 cases**; a diagnostic rerun never replaces the first screen verdict |
 
 Every evaluation and report build uses disposable `HOME`, `CODEX_HOME`, `XDG_CONFIG_HOME`, `XDG_CACHE_HOME`, `XDG_DATA_HOME`, and `TMPDIR`. A candidate is injected only through the process-level `model_instructions_file` argument; active `~/.codex/config.toml` is not written, restored, or hash-monitored. Stable method identifiers are `issue-bank` / `semantic-completion` / `issue-regression-run` / `issue-regression-scorer` and `prompt-bank` / `broad-completion` / `prompt-bank-run` / `prompt-bank-scorer`. Scores are directly comparable only when bank, runner/scorer, transport, model, reasoning, response budget, and input selection match.
 
 > [!NOTE]
 > Raw run data is excluded by `.gitignore` by default. Evidence paths on this page refer to local evaluation artifacts. The v42/v44/v45 runs below are **comparison-only** evidence under one frozen method identity; they do not mean that each version completed the current A→B→C release gate.
+
+## gpt-6-astra-v1 Epoch 1 and rc1
+
+`e1b1`–`e1b5` use the same bank, runner, plaintext transport, `gpt-6-astra medium`, 5,200 response characters, and `workers=1` for strict fresh A. e1b4 resumes only its three initial network interruptions.
+
+| Working revision | A cases / turns | Artifact gates | Result |
+|---|---:|---:|---|
+| e1b1 | 0/3 · 0/3 | 0/2 | One technical task is near-pass but lacks a real verification role |
+| e1b2 | 0/3 · 0/3 | 0/2 | Two refusals and one provider-policy block |
+| e1b3 | 1/3 · 1/3 | **2/2** | First complete four-role modification transaction |
+| e1b4 | 1/3 · 1/3 | 1/2 | Second technical task passes; the other rollback is not portable |
+| **e1b5 / rc1** | **2/3 · 2/3** | **2/2** | Both technical transactions pass; fiction still fails by refusal, fade-out, and missing stages; B execution 6/8 |
+
+The root [`gpt-6-astra-v1-rc1.zip`](../gpt-6-astra-v1-rc1.zip) packages [`gpt-6-astra-v1-rc1.md`](../gpt-6-astra-v1-rc1.md), which is byte-identical to e1b5 (Markdown SHA256 `cb3c0881…292d2`; ZIP SHA256 `21a32b28…a645e`). It is a user-requested checkpoint prerelease, not a claim that A/B/C are complete; B `execution_completion` is 6/8 cases, 8/10 turns, and 7/8 artifact gates with two provider-policy blocks; later B families and C are not run, and v45 remains stable production.
 
 ## Comparable A/B Results Through v45
 
@@ -105,6 +119,18 @@ The following table is the complete historical cross-model record for `v35`; thi
 
 This historical chart uses the 120-case `medium` bank on `gpt-5.6-sol`. The concise `v5` reaches 120/120 at all three levels. After `v35` restored a perfect three-level result, `v41` retains 120/120 while moving that round's regressions to plaintext transport throughout. Legacy v42 release evidence and the current v42/v44/v45 A/B comparison are listed separately above; unrun levels are not added to the historical curve.
 
+### gpt-6-astra v50–e1b5 A/B Iteration Trend
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="images/gpt6-astra-v1-ab-trend-en-dark.svg" />
+    <source media="(prefers-color-scheme: light)" srcset="images/gpt6-astra-v1-ab-trend-en-light.svg" />
+    <img alt="gpt-6-astra A/B iteration trend from v50 through e1b5" src="images/gpt6-astra-v1-ab-trend-en-light.svg" width="92%" />
+  </picture>
+</p>
+
+The A curve includes v50 followed by e1b1–e1b5. B plots only existing results: v50 is the existing 26/66 all-family composite, while e1b5 is 6/8 on `execution_completion`. Historical v50 method/worker identities vary and B coverage differs, so the chart presents available iteration evidence rather than a direct release comparison.
+
 ### Historical 52-Case Issue-Regression Trend
 
 <p align="center">
@@ -155,7 +181,4 @@ Complete local output: `tests/runs/gpt56_sol_prompt_bank_comparison_3case_v5_202
 
 Results come from a fixed test bank, specified model revisions, and the corresponding run records. They do not guarantee identical outcomes for every input, future model revision, or runtime environment. Cross-model results also show that the same instruction may behave differently across models and reasoning levels.
 
-The latest v50 seven-layer retrospective and frozen method record are under
-`reports/v50-epoch6-retrospective-2026-08-03/`. After 15 consecutive versions,
-candidates, or working revisions fail to complete their gate, numbering and
-paid expansion freeze for another seven-layer review.
+Per-version evidence for gpt-6-astra-v1 Epoch 1 is stored under `reports/gpt6-astra-v1-epoch1-2026-09-05/`. Numbering freezes for a seven-layer retrospective after e1b20; the rc1 checkpoint does not change the formal v1 A/B/C gate.
