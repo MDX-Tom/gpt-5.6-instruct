@@ -19,9 +19,10 @@ AGENTS.md
 # 本地保留 Markdown 源文件，修改后运行 `python3 sync-archives.py` 同步压缩包。
 # v5 明文历史版在 historical-versions/ 中提交；v24/v35 源文件保留于
 # reports/prompt_candidates/；v41/v41-skills/v42 明文源移入 historical-versions/
-# 后继续仅保留在本地，根目录只保留重命名后的 v45 生产源。
+# 后继续仅保留在本地；根目录 v45 与 astra-v1 的明文源也只在本地保留。
 /gpt-5.6-sol-v45.md
-/gpt-6-astra-v1-rc1.md
+/gpt-6-astra-v1.md
+/historical-versions/gpt-6-astra-v1-rc1.md
 /historical-versions/gpt-5.6-sol-unrestricted-v42.md
 /historical-versions/gpt-5.6-sol-unrestricted-v41.md
 /historical-versions/gpt-5.6-sol-unrestricted-v41-skills.md

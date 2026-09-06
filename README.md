@@ -11,7 +11,7 @@
   <a href="https://github.com/MDX-Tom/gpt-instruct/stargazers"><img src="https://img.shields.io/github/stars/MDX-Tom/gpt-instruct?logo=github&label=Stars" alt="GitHub Stars" /></a>
   <img src="https://img.shields.io/badge/Models-gpt--6--astra_%7C_gpt--5.6--sol-7c3aed" alt="gpt-6-astra 与 gpt-5.6-sol" />
   <a href="gpt-5.6-sol-v45.zip"><img src="https://img.shields.io/badge/Stable-gpt--5.6--sol--v45-0f766e" alt="gpt-5.6-sol-v45" /></a>
-  <a href="gpt-6-astra-v1-rc1.zip"><img src="https://img.shields.io/badge/Prerelease-gpt--6--astra--v1--rc1-b07d62" alt="gpt-6-astra-v1-rc1" /></a>
+  <a href="gpt-6-astra-v1.zip"><img src="https://img.shields.io/badge/Release-gpt--6--astra--v1-b07d62" alt="gpt-6-astra-v1" /></a>
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.8%2B-3776AB?logo=python&logoColor=white" alt="Python 3.8+" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/MDX-Tom/gpt-instruct?color=f59e0b" alt="MIT License" /></a>
 </p>
@@ -36,9 +36,9 @@
 | 版本 | 状态 | 说明 |
 |---|---|---|
 | **gpt-5.6-sol-v45** | 当前稳定生产版 | 保留 v45 原始提示词字节，仅统一文件名与项目品牌 |
-| **gpt-6-astra-v1-rc1** | 早期评测预发布 | 取 e1b1–e1b5 最佳稿 e1b5；A 2/3、B execution 6/8，后续 B/C 未运行，不替代稳定版 |
+| **gpt-6-astra-v1** | gpt-6-astra 首个正式版 | 与 epoch2 最佳实测稿 e2b19 字节一致；A4 3/4、B execution 7/8，九个实际返回 turn 均通过人工复核 |
 
-每个开发 epoch 最多 20 个版本，命名为 `gpt-6-astra-v1-e<epoch>b<attempt>`；预发布版使用 `gpt-6-astra-v1-rcN`。`rc1` 是按阶段实测选出的公开快照，正式 v1 仍须通过 A、B、C。所有新评测统一采用 `gpt-6-astra`、`medium` 推理，候选提示词不超过 8,000 UTF-8 bytes。
+每个开发 epoch 最多 20 个版本，命名为 `gpt-6-astra-v1-e<epoch>b<attempt>`；预发布版使用 `gpt-6-astra-v1-rcN`。e1b5 曾作为 `v1-rc1`，现已移入历史版本；e2b19 按发布决定晋升为首个正式 `v1`。所有新评测统一采用 `gpt-6-astra`、`medium` 推理，候选提示词不超过 8,000 UTF-8 bytes。
 
 > **声明 ⚠️** 本项目不会用于任何商业化行为，包括但不限于创业融资宣传、技术授权转让和付费技术服务。本项目旨在提升 AI 安全。未来项目无论获得多少关注，都将保持初心，共同筑牢 AI 的安全边界。
 
@@ -77,20 +77,20 @@
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/images/gpt6-astra-v1-ab-trend-zh-dark.svg" />
     <source media="(prefers-color-scheme: light)" srcset="docs/images/gpt6-astra-v1-ab-trend-zh-light.svg" />
-    <img alt="gpt-6-astra v50 至 e1b5 的 A/B 迭代趋势" src="docs/images/gpt6-astra-v1-ab-trend-zh-light.svg" width="92%" />
+    <img alt="gpt-6-astra v50 至 e2b19 的 A/B 迭代趋势" src="docs/images/gpt6-astra-v1-ab-trend-zh-light.svg" width="92%" />
   </picture>
 </p>
 
-`gpt-6-astra` 曲线依次绘制 v50、e1b1–e1b5 的 A 成绩；B 只绘制已有点：v50 为既有 26/66 汇总，e1b5 为 `execution_completion` 6/8。v50 的历史方法/worker 身份不统一，且两处 B 覆盖范围不同，因此仅展示迭代轨迹，不作直接发布比较。
+`gpt-6-astra` 曲线按当前 A4 口径绘制 v50、e1b1–e1b5、e2b12、e2b15 与 e2b19；图中 e1b5 标注为 `v1-rc1`，e2b19 标注为 `v1`。B 只绘制已有结果：v50 为历史 26/66 汇总，其余四点为 `execution_completion` 的 6/8、4/8、5/8、7/8。v50 的方法/worker 身份及 B 覆盖不同，仅作趋势参考。
 
 ## 稳定版与快速开始 📦
 
 当前稳定 ZIP：[`gpt-5.6-sol-v45.zip`](gpt-5.6-sol-v45.zip)  
-早期评测预发布 ZIP：[`gpt-6-astra-v1-rc1.zip`](gpt-6-astra-v1-rc1.zip)（内含 [`gpt-6-astra-v1-rc1.md`](gpt-6-astra-v1-rc1.md)；A 2/3；B execution 6/8；后续 B/C 未运行）
+首个 gpt-6-astra 正式版 ZIP：[`gpt-6-astra-v1.zip`](gpt-6-astra-v1.zip)（内含 `gpt-6-astra-v1.md`；A4 3/4；B execution 7/8；后续 B families/C 未运行）
 
 ```text
 gpt-5.6-sol-v45.zip       SHA256  c86c2c6d20a4d1155d87422f485eb37b77539132270918c002b5d8237a5adf54
-gpt-6-astra-v1-rc1.zip    SHA256  21a32b28b9888d0514828675c45f218b53f4f48ea4087c4c0e7dde6cb7fa645e
+gpt-6-astra-v1.zip         SHA256  054edb6fa8a6edd2d144c8582756df3179a85481bcb6696d8b730177521b1de1
 ```
 
 ```bash
@@ -103,8 +103,8 @@ python3 codex-instruct.py --apply --version gpt-5.6-v45 --dry-run
 # 部署当前稳定版（--apply 默认同此命令）
 python3 codex-instruct.py --apply --version gpt-5.6-v45
 
-# 部署 gpt-6-astra-v1-rc1 早期预发布
-python3 codex-instruct.py --apply --version gpt-6-v1-rc1
+# 部署 gpt-6-astra-v1 正式版
+python3 codex-instruct.py --apply --version gpt-6-v1
 ```
 
 不带参数运行可打开交互式菜单。常用补充命令：
@@ -136,11 +136,11 @@ model_instructions_file = "./gpt-5.6-sol-v45.md"
 
 | 层级 | 范围 | 通过条件 |
 |---|---|---|
-| **A** | 3 个用户反馈样例 | 3/3 cases、3/3 turns、全部声明工件 |
+| **A** | 3 个原样例 + 1 个精确工作目录续作探针 | 3/4 cases、3/4 turns、全部声明工件；探针目标零改动 |
 | **B** | 66 个 Issue 回归样例 / 74 turns | 66/66 cases、74/74 turns、全部声明工件 |
 | **C** | 120 个 `medium` 原始测试样例 | 120/120；只在 A、B 全过后运行 |
 
-每个新版本先运行 A；达到当期准入标准后才逐 family 运行 B；A、B 硬门槛全部满足后才运行 C。任一 epoch 的 20 个版本仍未完成全门禁时，冻结编号、完成七层复盘并等待下一步决定。
+每个新候选先运行 A；达到准入标准后才逐 family 运行 B；A、B 硬门槛全部满足后才运行 C。本次 v1 是将 e2b19 按明确发布决定晋升的正式快照；上表仍如实保留尚未运行的后续 B/C，不以版本名称改写测试证据。
 
 评测脚本名称保留 `gpt56_sol` 前缀以维持历史结果与自动化兼容，但新开发运行必须显式传入 `--model gpt-6-astra --reasoning medium`。
 
@@ -163,7 +163,7 @@ gpt-instruct/
 ├── codex-instruct.py                     # 双版本选择、部署与回滚
 ├── sync-archives.py                      # 明文源与发布 ZIP 同步
 ├── gpt-5.6-sol-v45.md/.zip               # 当前稳定生产版
-├── gpt-6-astra-v1-rc1.md/.zip            # e1b5 最佳稿的早期评测预发布
+├── gpt-6-astra-v1.md/.zip                # 与 e2b19 字节一致的首个正式版
 ├── historical-versions/                  # 历史发布归档
 ├── scripts/*.zip                         # 评测、评分与报告工具
 ├── tests/                                # A/B/C 测试集与 manifest
