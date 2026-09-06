@@ -3,7 +3,7 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/gpt-instruct-hero-dark.webp" />
   <source media="(prefers-color-scheme: light)" srcset="docs/images/gpt-instruct-hero-light.webp" />
-  <img src="docs/images/gpt-instruct-hero-light.webp" alt="gpt-instruct 提示词与测试工具链" width="70%" />
+  <img src="docs/images/gpt-instruct-hero-light.webp" alt="gpt-instruct 提示词与测试工具链" width="100%" />
 </picture><br />
 <img src="docs/images/readme-spacer.png" alt="" width="1" height="5" />
 
