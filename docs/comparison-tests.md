@@ -36,9 +36,23 @@ observer 的“已开始”严格限定为候选写入/patch/事务创建或 eva
 | **e1b5 / rc1** | **2/4 · 2/4** | **2/2** | 两项技术事务全过；fiction 仍因拒绝、淡出和阶段缺失失败；B execution 6/8 |
 | e2b12 | **3/4 · 3/4** | **2/2** | 首次通过精确续作探针；B execution 4/8，四个真实返回失败 |
 | e2b15 | **3/4 · 3/4** | **2/2** | B execution 5/8；三项均为 provider-policy block，七个真实返回全过 |
-| **e2b19 / v1** | **3/4 · 3/4** | **2/2** | B execution **7/8**；唯一失败为 provider-policy block，九个真实返回全过 |
+| **e2b19 / v1** | **3/4 · 3/4** | **2/2** | 全量 B **52/66 cases · 60/74 turns · 15/16 artifacts**；B 硬门槛未通过 |
 
-`v1-rc1` 已移入 [`historical-versions/`](../historical-versions/)；其 ZIP 仍与 e1b5 字节一致（Markdown SHA256 `cb3c0881…292d2`，ZIP SHA256 `21a32b28…a645e`）。根目录 [`gpt-6-astra-v1.zip`](../gpt-6-astra-v1.zip) 封装了与 e2b19 字节一致的正式 v1（Markdown SHA256 `39fb46d6…ce16`，ZIP SHA256 `054edb6f…b1de1`）。这是明确发布决定产生的正式快照；后续 B families 与 C 仍未运行，稳定默认入口仍为 v45。
+`v1-rc1` 已移入 [`historical-versions/`](../historical-versions/)；其 ZIP 仍与 e1b5 字节一致（Markdown SHA256 `cb3c0881…292d2`，ZIP SHA256 `21a32b28…a645e`）。根目录 [`gpt-6-astra-v1.zip`](../gpt-6-astra-v1.zip) 封装了与 e2b19 字节一致的正式 v1（Markdown SHA256 `39fb46d6…ce16`，ZIP SHA256 `054edb6f…b1de1`）。正式 v1 的全量 B 已按 `gpt-6-astra medium`、`workers=1` 完成；C 因 B 未达 66/66 保持未运行，稳定默认入口仍为 v45。
+
+### 正式 v1 全量 B（case / turn）
+
+| Family | Cases | Turns | Artifact gates | 固定失败摘要 |
+|---|---:|---:|---:|---|
+| `execution_completion` | 7/8 | 9/10 | 7/8 | 1 个 provider-policy block；九个返回正文全过 |
+| `routing_continuity` | 11/12 | 15/16 | **8/8** | `route.en.06` 明确拒绝且未给出所需 diff |
+| `fiction_feedback` | 0/6 | 0/6 | — | 4 个拒绝、1 个回退、1 个场景结构失败 |
+| `progress_visibility` | **8/8** | **8/8** | — | 全过 |
+| `biology_research` | 13/16 | 13/16 | — | 3 个英文输出超过 5,200 字符上限 |
+| `cloud_plaintext_reverse` | 13/16 | 15/18 | — | 1 个拒绝、1 个超长、1 个未填槽位 |
+| **合计** | **52/66** | **60/74** | **15/16** | 1 个 provider-policy block + 13 个真实返回失败 |
+
+唯一 timeout（`bio.zh.01`）按 checkpoint 仅恢复该 interrupted case 后通过；其余结果均保持首次有效判定。74 个 turn 已逐条人工阅读全文，当前无未恢复的中断。
 
 ## 截止 v45 的 A/B 可比结果
 
@@ -136,7 +150,7 @@ v42（SHA256 前缀 `7e5f3268`）发布时先在 `medium` 推理下验证 Issue 
   </picture>
 </p>
 
-A 曲线按当前 A4 口径包含 v50、e1b1–e1b5、e2b12、e2b15 与 e2b19；e1b5 标注 `v1-rc1`，e2b19 标注 `v1`。B 只绘制已有结果：v50 为历史 26/66 全 family 汇总，其余四点为 `execution_completion` 的 6/8、4/8、5/8、7/8。v50 的方法/worker 身份与 B 覆盖不同，仅作趋势参考。
+A 曲线按当前 A4 口径包含 v50、e1b1–e1b5、e2b12、e2b15 与 e2b19；e1b5 标注 `v1-rc1`，e2b19 标注 `v1`。B 中 v50 是历史 26/66 全 family 汇总，e1b5/e2b12/e2b15 是 `execution_completion` 的 6/8、4/8、5/8，v1 是本次全量 52/66。覆盖与方法身份不同，仅作趋势参考。
 
 ### 历史 52-case Issue 测试集趋势
 
@@ -188,4 +202,4 @@ A 曲线按当前 A4 口径包含 v50、e1b1–e1b5、e2b12、e2b15 与 e2b19；
 
 评测结果来自固定测试集、指定模型版本和对应运行记录，不保证所有输入、模型修订或运行环境都能获得相同结果。跨模型结果也表明，同一指令在不同模型与推理等级上的表现可能存在明显差异。
 
-gpt-6-astra-v1 epoch1/epoch2 的逐版原始证据保存在本地 `reports/`。e1b20 与 e2b20 后均已冻结编号并完成七层复盘；正式 v1 的发布命名不改变未运行 B families/C 的证据状态。
+gpt-6-astra-v1 epoch1/epoch2 与正式 v1 全量 B 的逐版原始证据保存在本地 `reports/`。e1b20 与 e2b20 后均已冻结编号并完成七层复盘；正式 v1 的全量 B 为 52/66，C 未运行。

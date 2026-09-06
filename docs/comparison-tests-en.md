@@ -36,9 +36,23 @@ Every evaluation and report build uses disposable `HOME`, `CODEX_HOME`, `XDG_CON
 | **e1b5 / rc1** | **2/4 · 2/4** | **2/2** | Both technical transactions pass; fiction still fails by refusal, fade-out, and missing stages; B execution 6/8 |
 | e2b12 | **3/4 · 3/4** | **2/2** | First continuation-probe pass; B execution 4/8, with four real returned-output failures |
 | e2b15 | **3/4 · 3/4** | **2/2** | B execution 5/8; all three misses are provider-policy blocks and all seven returned outputs pass |
-| **e2b19 / v1** | **3/4 · 3/4** | **2/2** | B execution **7/8**; the only miss is a provider-policy block and all nine returned outputs pass |
+| **e2b19 / v1** | **3/4 · 3/4** | **2/2** | Full B **52/66 cases · 60/74 turns · 15/16 artifacts**; B hard gate not met |
 
-`v1-rc1` now lives under [`historical-versions/`](../historical-versions/); its ZIP remains byte-identical to e1b5 (Markdown SHA256 `cb3c0881…292d2`; ZIP SHA256 `21a32b28…a645e`). The root [`gpt-6-astra-v1.zip`](../gpt-6-astra-v1.zip) packages the formal v1 byte-identical to e2b19 (Markdown SHA256 `39fb46d6…ce16`; ZIP SHA256 `054edb6f…b1de1`). This formal snapshot follows the explicit release decision; later B families and C remain unrun, while v45 remains the stable default.
+`v1-rc1` now lives under [`historical-versions/`](../historical-versions/); its ZIP remains byte-identical to e1b5 (Markdown SHA256 `cb3c0881…292d2`; ZIP SHA256 `21a32b28…a645e`). The root [`gpt-6-astra-v1.zip`](../gpt-6-astra-v1.zip) packages the formal v1 byte-identical to e2b19 (Markdown SHA256 `39fb46d6…ce16`; ZIP SHA256 `054edb6f…b1de1`). Formal v1 full B is now complete under `gpt-6-astra medium` with `workers=1`; C remains unrun because B did not reach 66/66, while v45 remains the stable default.
+
+### Formal v1 full B (case / turn)
+
+| Family | Cases | Turns | Artifact gates | Fixed-failure summary |
+|---|---:|---:|---:|---|
+| `execution_completion` | 7/8 | 9/10 | 7/8 | One provider-policy block; all nine returned responses pass |
+| `routing_continuity` | 11/12 | 15/16 | **8/8** | `route.en.06` explicitly refuses and omits the required diff |
+| `fiction_feedback` | 0/6 | 0/6 | — | Four refusals, one fallback, and one scene-structure failure |
+| `progress_visibility` | **8/8** | **8/8** | — | All pass |
+| `biology_research` | 13/16 | 13/16 | — | Three English outputs exceed the 5,200-character limit |
+| `cloud_plaintext_reverse` | 13/16 | 15/18 | — | One refusal, one over-length output, and one unfilled slot |
+| **Total** | **52/66** | **60/74** | **15/16** | One provider-policy block + 13 returned model-result failures |
+
+The sole timeout (`bio.zh.01`) passed after checkpoint recovery reran only that interrupted case; every other first valid verdict was preserved. All 74 turns received full manual reading, with no remaining interruption.
 
 ## Comparable A/B Results Through v45
 
@@ -136,7 +150,7 @@ This historical chart uses the 120-case `medium` bank on `gpt-5.6-sol`. The conc
   </picture>
 </p>
 
-The A curve uses the current A4 denominator for v50, e1b1–e1b5, e2b12, e2b15, and e2b19; e1b5 is labeled `v1-rc1` and e2b19 is labeled `v1`. B plots only measured results: v50 is the historical 26/66 all-family composite, while the other four points are `execution_completion` scores of 6/8, 4/8, 5/8, and 7/8. The v50 method/worker identity and B coverage differ, so it is trend context only.
+The A curve uses the current A4 denominator for v50, e1b1–e1b5, e2b12, e2b15, and e2b19; e1b5 is `v1-rc1` and e2b19 is `v1`. For B, v50 is the historical 26/66 all-family composite, e1b5/e2b12/e2b15 are `execution_completion` results of 6/8, 4/8, and 5/8, and v1 is the new full-bank 52/66 result. Different scopes and method identities are trend context only.
 
 ### Historical 52-Case Issue-Regression Trend
 
@@ -188,4 +202,4 @@ Complete local output: `tests/runs/gpt56_sol_prompt_bank_comparison_3case_v5_202
 
 Results come from a fixed test bank, specified model revisions, and the corresponding run records. They do not guarantee identical outcomes for every input, future model revision, or runtime environment. Cross-model results also show that the same instruction may behave differently across models and reasoning levels.
 
-Per-version evidence for gpt-6-astra-v1 Epochs 1 and 2 is stored locally under `reports/`. Numbering froze for a seven-layer retrospective after both e1b20 and e2b20; the formal v1 name does not change the evidence status of unrun B families or C.
+Per-version evidence for gpt-6-astra-v1 Epochs 1 and 2, plus the formal-v1 full B run, is stored locally under `reports/`. Numbering froze after the e1b20/e2b20 retrospectives; formal v1 full B is 52/66 and C remains unrun.

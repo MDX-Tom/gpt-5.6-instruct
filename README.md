@@ -36,7 +36,7 @@
 | 版本 | 状态 | 说明 |
 |---|---|---|
 | **gpt-5.6-sol-v45** | 当前稳定生产版 | 保留 v45 原始提示词字节，仅统一文件名与项目品牌 |
-| **gpt-6-astra-v1** | gpt-6-astra 首个正式版 | 与 epoch2 最佳实测稿 e2b19 字节一致；A4 3/4、B execution 7/8，九个实际返回 turn 均通过人工复核 |
+| **gpt-6-astra-v1** | gpt-6-astra 首个正式版 | 与 epoch2 最佳实测稿 e2b19 字节一致；A4 3/4；全量 B 为 **52/66 cases、60/74 turns、15/16 artifact gates** |
 
 每个开发 epoch 最多 20 个版本，命名为 `gpt-6-astra-v1-e<epoch>b<attempt>`；预发布版使用 `gpt-6-astra-v1-rcN`。e1b5 曾作为 `v1-rc1`，现已移入历史版本；e2b19 按发布决定晋升为首个正式 `v1`。所有新评测统一采用 `gpt-6-astra`、`medium` 推理，候选提示词不超过 8,000 UTF-8 bytes。
 
@@ -81,12 +81,12 @@
   </picture>
 </p>
 
-`gpt-6-astra` 曲线按当前 A4 口径绘制 v50、e1b1–e1b5、e2b12、e2b15 与 e2b19；图中 e1b5 标注为 `v1-rc1`，e2b19 标注为 `v1`。B 只绘制已有结果：v50 为历史 26/66 汇总，其余四点为 `execution_completion` 的 6/8、4/8、5/8、7/8。v50 的方法/worker 身份及 B 覆盖不同，仅作趋势参考。
+`gpt-6-astra` 曲线按当前 A4 口径绘制 v50、e1b1–e1b5、e2b12、e2b15 与 e2b19；e1b5 标注 `v1-rc1`，e2b19 标注 `v1`。B 中 v50 是历史 26/66 汇总，e1b5/e2b12/e2b15 仅覆盖 `execution_completion`（6/8、4/8、5/8），正式 v1 点为本次全量 **52/66**；不同覆盖与方法身份只作趋势参考。
 
 ## 稳定版与快速开始 📦
 
 当前稳定 ZIP：[`gpt-5.6-sol-v45.zip`](gpt-5.6-sol-v45.zip)  
-首个 gpt-6-astra 正式版 ZIP：[`gpt-6-astra-v1.zip`](gpt-6-astra-v1.zip)（内含 `gpt-6-astra-v1.md`；A4 3/4；B execution 7/8；后续 B families/C 未运行）
+首个 gpt-6-astra 正式版 ZIP：[`gpt-6-astra-v1.zip`](gpt-6-astra-v1.zip)（内含 `gpt-6-astra-v1.md`；A4 3/4；全量 B 52/66 cases、60/74 turns；C 未运行）
 
 ```text
 gpt-5.6-sol-v45.zip       SHA256  c86c2c6d20a4d1155d87422f485eb37b77539132270918c002b5d8237a5adf54
@@ -140,7 +140,7 @@ model_instructions_file = "./gpt-5.6-sol-v45.md"
 | **B** | 66 个 Issue 回归样例 / 74 turns | 66/66 cases、74/74 turns、全部声明工件 |
 | **C** | 120 个 `medium` 原始测试样例 | 120/120；只在 A、B 全过后运行 |
 
-每个新候选先运行 A；达到准入标准后才逐 family 运行 B；A、B 硬门槛全部满足后才运行 C。本次 v1 是将 e2b19 按明确发布决定晋升的正式快照；上表仍如实保留尚未运行的后续 B/C，不以版本名称改写测试证据。
+每个新候选先运行 A；达到准入标准后才逐 family 运行 B；A、B 硬门槛全部满足后才运行 C。本次 v1 是将 e2b19 按明确发布决定晋升的正式快照；其全量 B 已运行但未达到硬门槛，因此 C 保持未运行。
 
 评测脚本名称保留 `gpt56_sol` 前缀以维持历史结果与自动化兼容，但新开发运行必须显式传入 `--model gpt-6-astra --reasoning medium`。
 

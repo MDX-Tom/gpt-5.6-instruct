@@ -36,7 +36,7 @@ The project now maintains two long-term product lines:
 | Version | Status | Description |
 |---|---|---|
 | **gpt-5.6-sol-v45** | Current stable production release | Preserves the original v45 prompt bytes; only its filename and project branding are normalized |
-| **gpt-6-astra-v1** | First formal gpt-6-astra release | Byte-identical to the epoch2 best measured revision e2b19; A4 is 3/4 and B execution is 7/8, with all nine returned turns passing manual review |
+| **gpt-6-astra-v1** | First formal gpt-6-astra release | Byte-identical to epoch2 best revision e2b19; A4 is 3/4; full B is **52/66 cases, 60/74 turns, and 15/16 artifact gates** |
 
 Each development epoch contains at most 20 versions named `gpt-6-astra-v1-e<epoch>b<attempt>`. Prereleases use `gpt-6-astra-v1-rcN`. e1b5 was released as `v1-rc1` and is now archived; e2b19 was promoted by release decision to the first formal `v1`. All new runs use `gpt-6-astra` at `medium` reasoning, and every candidate prompt is limited to 8,000 UTF-8 bytes.
 
@@ -79,12 +79,12 @@ Each development epoch contains at most 20 versions named `gpt-6-astra-v1-e<epoc
   </picture>
 </p>
 
-The `gpt-6-astra` chart plots v50, e1b1–e1b5, e2b12, e2b15, and e2b19 under the current A4 denominator; e1b5 is labeled `v1-rc1` and e2b19 is labeled `v1`. B plots only measured results: v50 is the historical 26/66 composite, while the other four points are `execution_completion` scores of 6/8, 4/8, 5/8, and 7/8. The v50 method/worker identity and B scope differ, so it is trend context only.
+The `gpt-6-astra` chart uses the current A4 denominator for v50, e1b1–e1b5, e2b12, e2b15, and e2b19; e1b5 is `v1-rc1` and e2b19 is `v1`. For B, v50 is the historical 26/66 composite, e1b5/e2b12/e2b15 cover only `execution_completion` (6/8, 4/8, 5/8), and formal v1 is the new full-bank **52/66** point. Differing scopes and method identities are trend context only.
 
 ## Stable Release and Quick Start 📦
 
 Current stable ZIP: [`gpt-5.6-sol-v45.zip`](gpt-5.6-sol-v45.zip)  
-First formal gpt-6-astra ZIP: [`gpt-6-astra-v1.zip`](gpt-6-astra-v1.zip) (contains `gpt-6-astra-v1.md`; A4 3/4; B execution 7/8; later B families/C not run)
+First formal gpt-6-astra ZIP: [`gpt-6-astra-v1.zip`](gpt-6-astra-v1.zip) (contains `gpt-6-astra-v1.md`; A4 3/4; full B 52/66 cases and 60/74 turns; C not run)
 
 ```text
 gpt-5.6-sol-v45.zip       SHA256  c86c2c6d20a4d1155d87422f485eb37b77539132270918c002b5d8237a5adf54
@@ -138,7 +138,7 @@ To roll back, remove or comment out the entry; optionally delete the matching Ma
 | **B** | 66 Issue-regression cases / 74 turns | 66/66 cases, 74/74 turns, and every declared artifact gate |
 | **C** | 120 original `medium` cases | 120/120; runs only after A and B pass completely |
 
-Every new candidate runs A first, proceeds through B family by family only after meeting the current admission rule, and starts C only after the hard A and B gates pass. This v1 is the formal snapshot produced by explicitly promoting e2b19; the table still preserves the fact that later B families and C were not run rather than rewriting the evidence to match the version name.
+Every new candidate runs A first, proceeds through B family by family only after meeting the admission rule, and starts C only after the hard A and B gates pass. This v1 is the formal snapshot explicitly promoted from e2b19; its full B has now run without reaching the hard gate, so C remains unrun.
 
 Evaluation script names retain the `gpt56_sol` prefix for historical-result and automation compatibility. New development runs must explicitly pass `--model gpt-6-astra --reasoning medium`.
 
